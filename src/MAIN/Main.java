@@ -13,9 +13,7 @@ public class Main {
 
         InitFrame initFrame = InitFrame.getINSTANCE();
         initFrame.initFrame();
-        while (!initFrame.isConfirmed()) {
-            System.out.println("Waiting for confirmation...");
-        }
+        while (!initFrame.isConfirmed());
         InitItem initItem = initFrame.getInitItem();
 
         PipedWriter w = new PipedWriter();
