@@ -4,11 +4,16 @@ import ITEMS.InitItem;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.Random;
 
 public class InitFrame extends JFrame implements ActionListener {
 
     private JTextField peopleField, minInterval, maxInterval, elevators, floors, runInterval;
+    private JComboBox<String> comboBox;
     private static final InitFrame INSTANCE = new InitFrame();
     private InitItem initItem;
     private boolean confirmed;
@@ -26,7 +31,7 @@ public class InitFrame extends JFrame implements ActionListener {
     }
 
     private void initComponents() {
-        JPanel panel = new JPanel(new GridLayout(7, 2));
+        JPanel panel = new JPanel(new GridLayout(8, 2));
 
         JButton comfirmButton = new JButton("Confirm");
         JButton resetButton = new JButton("Reset");
@@ -59,6 +64,10 @@ public class InitFrame extends JFrame implements ActionListener {
         runInterval = new JTextField(10);
         runInterval.addKeyListener(myTextFieldKeyAdaptor);
 
+        String mode[] = { "General", "Maintenance", "Emergency" };
+        comboBox = new JComboBox<>(mode);
+        JLabel modeLabel = new JLabel("Elevator mode: ");
+
         this.add(panel);
         panel.add(peopleLabel);
         panel.add(peopleField);
@@ -72,8 +81,13 @@ public class InitFrame extends JFrame implements ActionListener {
         panel.add(floors);
         panel.add(runInterLabel);
         panel.add(runInterval);
+        panel.add(modeLabel);
+        panel.add(comboBox);
         panel.add(comfirmButton);
         panel.add(resetButton);
+
+        comboBox.setSelectedIndex(0);
+        comboBox.setVisible(true);
 
         this.setTitle("Initialization");
         this.setSize(640, 320);
@@ -98,10 +112,12 @@ public class InitFrame extends JFrame implements ActionListener {
                 int floorNum = Integer.parseInt(floors.getText());
                 int runIntervalNum = Integer.parseInt(runInterval.getText());
                 initItem = new InitItem(peopleNum, minIntervalNum, maxIntervalNum, elevatorNum, floorNum, runIntervalNum);
+                checkMode(comboBox.getSelectedIndex());
                 confirmed = true;
                 this.dispose();
                 break;
             case "Reset":
+                reset();
                 break;
         }
     }
@@ -110,7 +126,7 @@ public class InitFrame extends JFrame implements ActionListener {
         if (peopleField.getText().isEmpty() || minInterval.getText().isEmpty()
                 || maxInterval.getText().isEmpty() || elevators.getText().isEmpty()
                 || (floors.getText().isEmpty() || runInterval.getText().isEmpty())) {
-            JOptionPane.showMessageDialog(null, "Please fill all the fields");
+            showWarning("Please fill all the fields");
             return false;
         }
         return true;
@@ -122,6 +138,40 @@ public class InitFrame extends JFrame implements ActionListener {
 
     public InitItem getInitItem() {
         return initItem;
+    }
+
+    private void checkMode(int selectedIndex) {
+        switch (selectedIndex) {
+            case 0:
+                break;
+            case 1:
+                Random rand = new Random();
+                int elevatorNum = initItem.getElevators();
+                int numUnderMaintenance = rand.nextInt(elevatorNum);
+                showWarning(numUnderMaintenance + " elevator(s) are under maintenance, "
+                        + (elevatorNum - numUnderMaintenance) + " elevator(s) are available.");
+                initItem.setElevators(elevatorNum - numUnderMaintenance);
+                break;
+            case 2:
+                showWarning("The building in emergency status, no elevator available.");
+                initItem.setElevators(0);
+                break;
+        }
+    }
+
+    private void reset() {
+        peopleField.setText("");
+        minInterval.setText("");
+        maxInterval.setText("");
+        elevators.setText("");
+        floors.setText("");
+        runInterval.setText("");
+        confirmed = false;
+        comboBox.setSelectedIndex(0);
+    }
+
+    private void showWarning(String message) {
+        JOptionPane.showMessageDialog(null, message);
     }
 }
 

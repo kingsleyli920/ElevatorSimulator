@@ -1,6 +1,8 @@
 package MAIN;
 
-import ACTIONS.*;
+import ACTIONS.DispELev;
+import ACTIONS.RunElev;
+import ACTIONS.SimuPeop;
 import ITEMS.InitItem;
 import TOOLS.InitFrame;
 
@@ -13,8 +15,20 @@ public class Main {
 
         InitFrame initFrame = InitFrame.getINSTANCE();
         initFrame.initFrame();
-        while (!initFrame.isConfirmed());
+        while (!initFrame.isConfirmed()) {
+            // Busy-wait with a delay to allow other threads to run
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
         InitItem initItem = initFrame.getInitItem();
+
+        if (initItem.getElevators() == 0) {
+            return;
+        }
 
         PipedWriter w = new PipedWriter();
         SimuPeop sp = new SimuPeop(initItem.getPeople(), initItem.getMinInteral(), initItem.getMaxInterval(), initItem.getFloors(), w);
